@@ -1,0 +1,1393 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Subscription Killer</title>
+<style>
+:root {
+  --bg-primary:#0a0a0f;--bg-secondary:#12121a;--bg-card:#1a1a26;--bg-card-hover:#1f1f30;
+  --bg-elevated:#22223a;--accent-green:#00d46a;--accent-green-dim:rgba(0,212,106,0.12);
+  --accent-red:#ff4757;--accent-red-dim:rgba(255,71,87,0.12);--accent-orange:#ffa502;
+  --accent-orange-dim:rgba(255,165,2,0.12);--accent-purple:#7c3aed;--accent-blue:#3b82f6;
+  --accent-blue-dim:rgba(59,130,246,0.12);--text-primary:#f0f0ff;--text-secondary:#8888aa;
+  --text-muted:#555570;--border:rgba(255,255,255,0.07);--border-bright:rgba(255,255,255,0.14);
+  --shadow:0 8px 32px rgba(0,0,0,0.5);--radius-sm:12px;--radius-md:16px;--radius-lg:24px;
+}
+.light-mode {
+  --bg-primary:#f4f5f9;--bg-secondary:#eceef5;--bg-card:#fff;--bg-card-hover:#f9fafb;
+  --bg-elevated:#f0f1f8;--text-primary:#0a0a1a;--text-secondary:#5a5a7a;--text-muted:#9090aa;
+  --border:rgba(0,0,0,0.07);--border-bright:rgba(0,0,0,0.12);--shadow:0 4px 20px rgba(0,0,0,0.1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,'SF Pro Display','Inter',BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:20px;transition:background .3s,color .3s;}
+.phone-wrap{display:flex;gap:28px;align-items:flex-start;justify-content:center;flex-wrap:wrap;max-width:1400px;width:100%;}
+.phone{width:390px;min-height:844px;background:var(--bg-secondary);border-radius:48px;border:1px solid var(--border-bright);overflow:hidden;box-shadow:var(--shadow),0 0 0 8px rgba(0,0,0,.35),0 40px 80px rgba(0,0,0,.6);display:flex;flex-direction:column;flex-shrink:0;position:relative;}
+.status-bar{display:flex;justify-content:space-between;align-items:center;padding:14px 28px 0;font-size:13px;font-weight:700;color:var(--text-primary);flex-shrink:0;}
+.notch{width:110px;height:26px;background:var(--bg-primary);border-radius:0 0 16px 16px;}
+.nav-tabs{display:flex;gap:4px;padding:10px 12px 0;background:var(--bg-secondary);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+.nav-tabs::-webkit-scrollbar{display:none;}
+.nav-tab{padding:7px 12px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;color:var(--text-secondary);border:none;background:transparent;transition:all .2s;}
+.nav-tab.active{background:var(--accent-purple);color:#fff;}
+.theme-btn{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg-elevated);color:var(--text-primary);font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:inherit;}
+
+/* SCREENS */
+.pg{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.pg.active{display:flex;}
+.scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:90px;}
+.scroll::-webkit-scrollbar{display:none;}
+
+/* BOTTOM NAV */
+.bnav{background:var(--bg-secondary);border-top:1px solid var(--border);display:flex;padding:12px 0 24px;flex-shrink:0;}
+.bi{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px;border:none;background:transparent;color:var(--text-muted);font-size:10px;font-weight:600;}
+.bi.active{color:var(--accent-purple);}
+.bi-icon{font-size:22px;line-height:1;}
+
+/* AUTH */
+.auth-bg{flex:1;background:linear-gradient(180deg,#0d0520 0%,#0a0a0f 65%);display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none;}
+.auth-bg::-webkit-scrollbar{display:none;}
+.auth-logo-wrap{display:flex;flex-direction:column;align-items:center;padding:36px 32px 20px;}
+.logo-box{width:76px;height:76px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:38px;box-shadow:0 0 40px rgba(124,58,237,.5);margin-bottom:14px;}
+.app-name{font-size:28px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#f0f0ff,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.app-tag{font-size:13px;color:var(--text-secondary);margin-top:5px;text-align:center;line-height:1.4;}
+.form-area{background:var(--bg-card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-top:1px solid var(--border);padding:26px 22px 36px;flex:1;}
+.form-title{font-size:22px;font-weight:800;margin-bottom:3px;}
+.form-sub{font-size:13px;color:var(--text-secondary);margin-bottom:20px;}
+
+/* INPUTS */
+.ig{margin-bottom:13px;}
+.ilabel{font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:.4px;}
+.iwrap{position:relative;}
+.iinput{width:100%;background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px 13px 42px;color:var(--text-primary);font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit;}
+.iinput:focus{border-color:var(--accent-purple);box-shadow:0 0 0 3px rgba(124,58,237,.15);}
+.iinput::placeholder{color:var(--text-muted);}
+.iinput.err{border-color:var(--accent-red);}
+.ii{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:17px;opacity:.5;pointer-events:none;}
+.ieye{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:17px;opacity:.5;cursor:pointer;}
+.ferr{font-size:11px;color:var(--accent-red);margin-top:4px;display:none;}
+.ferr.show{display:block;}
+
+/* STRENGTH */
+.sb-wrap{margin-top:7px;display:none;}
+.sb{display:flex;gap:4px;margin-bottom:3px;}
+.ss{flex:1;height:4px;border-radius:2px;background:var(--bg-elevated);transition:background .3s;}
+.slabel{font-size:11px;font-weight:700;}
+
+/* SOCIAL */
+.sdiv{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:11px;color:var(--text-muted);font-weight:600;}
+.sdiv::before,.sdiv::after{content:'';flex:1;height:1px;background:var(--border);}
+.sbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elevated);color:var(--text-primary);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:9px;font-family:inherit;transition:all .2s;}
+.sbtn:active{opacity:.7;transform:scale(.98);}
+
+/* TERMS CHECKBOX — big, unmissable */
+.tc-box{border:2px solid var(--border-bright);border-radius:var(--radius-md);padding:14px;margin:14px 0;background:var(--bg-elevated);transition:border-color .3s;}
+.tc-box.accepted{border-color:var(--accent-green);background:var(--accent-green-dim);}
+.tc-row{display:flex;align-items:flex-start;gap:12px;}
+.cb{width:24px;height:24px;min-width:24px;border:2px solid var(--border-bright);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s;background:var(--bg-card);margin-top:1px;}
+.cb.on{background:var(--accent-green);border-color:var(--accent-green);color:#fff;}
+.tc-text{font-size:13px;color:var(--text-secondary);line-height:1.5;}
+.tc-text a{color:var(--accent-purple);font-weight:700;cursor:pointer;}
+.tc-note{font-size:11px;color:var(--text-muted);margin-top:8px;text-align:center;}
+
+/* BUTTONS */
+.btn-p{width:100%;padding:15px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:#fff;border:none;border-radius:var(--radius-sm);font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,.4);font-family:inherit;transition:all .2s;letter-spacing:.2px;}
+.btn-p:active{transform:scale(.98);opacity:.9;}
+.btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.btn-p.green{background:linear-gradient(135deg,#00d46a,#00a854);box-shadow:0 4px 20px rgba(0,212,106,.4);}
+.btn-p.red{background:linear-gradient(135deg,#ff4757,#cc1f2e);box-shadow:0 4px 20px rgba(255,71,87,.4);}
+.btn-o{width:100%;padding:13px;background:transparent;color:var(--accent-purple);border:1.5px solid var(--accent-purple);border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:9px;transition:all .2s;}
+.btn-o:active{background:rgba(124,58,237,.1);}
+.aswitch{text-align:center;margin-top:18px;font-size:13px;color:var(--text-secondary);}
+.aswitch a{color:var(--accent-purple);font-weight:700;cursor:pointer;}
+.flink{text-align:right;margin-top:-7px;margin-bottom:16px;font-size:12px;font-weight:700;color:var(--accent-purple);cursor:pointer;}
+
+/* TOAST */
+.toast{position:absolute;bottom:110px;left:18px;right:18px;padding:13px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;text-align:center;opacity:0;transform:translateY(8px);transition:all .3s;z-index:200;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+/* SCAN SCREEN */
+.scan-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 24px;text-align:center;}
+.scan-radar{width:160px;height:160px;border-radius:50%;border:2px solid rgba(124,58,237,.3);position:relative;margin:0 auto 28px;display:flex;align-items:center;justify-content:center;}
+.scan-radar::before{content:'';position:absolute;width:110px;height:110px;border-radius:50%;border:2px solid rgba(124,58,237,.2);}
+.scan-radar::after{content:'';position:absolute;width:60px;height:60px;border-radius:50%;border:2px solid rgba(124,58,237,.15);}
+.scan-sweep{position:absolute;width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--accent-purple));transform-origin:0 50%;animation:sweep 2s linear infinite;top:50%;left:50%;}
+@keyframes sweep{to{transform:rotate(360deg);}}
+.scan-dot{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--accent-green);box-shadow:0 0 8px var(--accent-green);}
+.scan-icon{font-size:36px;}
+.scan-title{font-size:22px;font-weight:900;letter-spacing:-.5px;margin-bottom:8px;}
+.scan-sub{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:20px;}
+.scan-log{width:100%;background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);padding:14px;text-align:left;max-height:200px;overflow:hidden;}
+.scan-entry{font-size:11px;color:var(--text-secondary);padding:3px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
+.scan-entry:last-child{border-bottom:none;}
+.scan-pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent-green);flex-shrink:0;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.prog-bar{width:100%;height:6px;background:var(--bg-elevated);border-radius:3px;overflow:hidden;margin:16px 0;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent-purple),var(--accent-blue));border-radius:3px;transition:width .4s;}
+
+/* ALL CLEAR */
+.allclear{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;text-align:center;}
+.ac-icon{font-size:80px;margin-bottom:20px;animation:pop .5s ease;}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.ac-title{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:8px;}
+.ac-sub{font-size:14px;color:var(--text-secondary);line-height:1.6;margin-bottom:24px;}
+.ac-stats{display:flex;gap:12px;width:100%;margin-bottom:24px;}
+.ac-stat{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;text-align:center;}
+.ac-stat-val{font-size:22px;font-weight:900;}
+.ac-stat-label{font-size:10px;color:var(--text-secondary);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+
+/* DEEP SCAN PAYWALL */
+.paywall{flex:1;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none;}
+.paywall::-webkit-scrollbar{display:none;}
+.pw-hero{padding:28px 22px 20px;background:linear-gradient(135deg,#0d0520,#05101a);text-align:center;position:relative;overflow:hidden;}
+.pw-hero::before{content:'';position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(124,58,237,.4) 0%,transparent 70%);top:-60px;right:-40px;border-radius:50%;}
+.pw-hero::after{content:'';position:absolute;width:150px;height:150px;background:radial-gradient(circle,rgba(255,71,87,.2) 0%,transparent 70%);bottom:-30px;left:-30px;border-radius:50%;}
+.pw-icon{font-size:52px;margin-bottom:12px;display:block;}
+.pw-title{font-size:24px;font-weight:900;letter-spacing:-.5px;color:#fff;margin-bottom:6px;}
+.pw-sub{font-size:13px;color:rgba(255,255,255,.65);line-height:1.5;}
+.pw-price{font-size:40px;font-weight:900;color:#fff;margin:16px 0 4px;}
+.pw-price-sub{font-size:12px;color:rgba(255,255,255,.5);}
+.pw-body{flex:1;padding:20px 20px;overflow-y:auto;scrollbar-width:none;}
+.pw-feature{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);}
+.pw-feature:last-child{border-bottom:none;}
+.pw-feat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.pw-feat-title{font-size:14px;font-weight:700;}
+.pw-feat-sub{font-size:11px;color:var(--text-secondary);margin-top:2px;line-height:1.4;}
+.pw-cta{padding:0 20px 28px;}
+
+/* PAYMENT MODAL */
+.modal-overlay{position:absolute;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:flex-end;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--bg-card);border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-top:1px solid var(--border);padding:24px 22px 36px;width:100%;}
+.modal-handle{width:40px;height:4px;background:var(--border-bright);border-radius:2px;margin:0 auto 20px;}
+.modal-title{font-size:20px;font-weight:800;margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--text-secondary);margin-bottom:20px;}
+.card-field{background:var(--bg-elevated);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;font-size:15px;color:var(--text-primary);font-family:inherit;width:100%;outline:none;margin-bottom:10px;}
+.card-field:focus{border-color:var(--accent-purple);}
+.card-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.pay-secure{text-align:center;font-size:11px;color:var(--text-muted);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:5px;}
+
+/* POLICY */
+.pol-header{display:flex;align-items:center;gap:12px;padding:18px 18px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.back-btn{width:34px;height:34px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;flex-shrink:0;color:var(--text-primary);}
+.pol-body{flex:1;overflow-y:auto;padding:18px;scrollbar-width:none;}
+.pol-body::-webkit-scrollbar{display:none;}
+.pol-h{font-size:15px;font-weight:800;margin:18px 0 7px;color:var(--text-primary);}
+.pol-h:first-child{margin-top:0;}
+.pol-p{font-size:13px;color:var(--text-secondary);margin-bottom:9px;line-height:1.7;}
+.pol-b{font-size:13px;color:var(--text-secondary);padding:3px 0 3px 16px;position:relative;}
+.pol-b::before{content:'•';position:absolute;left:4px;color:var(--accent-purple);}
+.pol-hi{background:rgba(124,58,237,.1);border-left:3px solid var(--accent-purple);border-radius:0 8px 8px 0;padding:10px 14px;margin:10px 0;font-size:13px;color:var(--text-secondary);}
+.pol-updated{font-size:11px;color:var(--text-muted);margin-bottom:14px;}
+
+/* CARD/MISC */
+.card{background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);padding:14px;margin:10px 16px 0;}
+.card-t{font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 16px 0;}
+.sec-title{font-size:16px;font-weight:800;}
+.sec-action{font-size:12px;font-weight:700;color:var(--accent-purple);cursor:pointer;}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.b-green{background:var(--accent-green-dim);color:var(--accent-green);}
+.b-red{background:var(--accent-red-dim);color:var(--accent-red);}
+.b-orange{background:var(--accent-orange-dim);color:var(--accent-orange);}
+.b-blue{background:var(--accent-blue-dim);color:var(--accent-blue);}
+.b-purple{background:rgba(124,58,237,.15);color:#a78bfa;}
+
+/* HERO CARD */
+.hero-card{margin:14px 16px 0;background:linear-gradient(135deg,#1a0a3a 0%,#0d1a3a 50%,#001a2a 100%);border-radius:var(--radius-lg);padding:22px;position:relative;overflow:hidden;border:1px solid rgba(124,58,237,.3);}
+.hero-card::before{content:'';position:absolute;width:200px;height:200px;background:radial-gradient(circle,rgba(124,58,237,.3) 0%,transparent 70%);top:-60px;right:-60px;border-radius:50%;}
+.h-label{font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;}
+.h-amount{font-size:44px;font-weight:900;color:#fff;letter-spacing:-2px;line-height:1.1;margin:6px 0 4px;}
+.h-sub{font-size:13px;color:rgba(255,255,255,.6);}
+.h-stats{display:flex;gap:14px;margin-top:16px;padding-top:13px;border-top:1px solid rgba(255,255,255,.1);}
+.hs{flex:1;}
+.hs-val{font-size:18px;font-weight:800;color:#fff;}
+.hs-lbl{font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;}
+
+/* METRICS */
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 16px 0;}
+.mc{background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);padding:13px;}
+.ml{font-size:10px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;}
+.mv{font-size:21px;font-weight:800;margin:5px 0 3px;}
+.mch{font-size:11px;font-weight:600;}
+.green{color:var(--accent-green);}.red{color:var(--accent-red);}.orange{color:var(--accent-orange);}
+
+/* SUB ITEM */
+.si{display:flex;align-items:center;gap:11px;padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;}
+.si:last-child{border-bottom:none;}
+.si-logo{width:40px;height:40px;border-radius:11px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.si-info{flex:1;min-width:0;}
+.si-name{font-size:13px;font-weight:700;}
+.si-meta{font-size:11px;color:var(--text-secondary);margin-top:1px;}
+.si-right{text-align:right;flex-shrink:0;}
+.si-price{font-size:14px;font-weight:800;}
+.si-date{font-size:10px;color:var(--text-secondary);}
+.hb-wrap{display:flex;align-items:center;gap:6px;margin-top:3px;}
+.hb{height:3px;border-radius:2px;background:var(--bg-elevated);flex:1;overflow:hidden;}
+.hbf{height:100%;border-radius:2px;}
+.hs-num{font-size:10px;font-weight:800;}
+
+/* ALERT */
+.al{display:flex;align-items:flex-start;gap:11px;padding:13px;border-radius:var(--radius-sm);margin:10px 16px 0;}
+.al-icon{font-size:19px;flex-shrink:0;margin-top:1px;}
+.al-body{flex:1;}
+.al-title{font-size:14px;font-weight:700;}
+.al-msg{font-size:12px;margin-top:3px;line-height:1.4;opacity:.85;}
+.al-btn{margin-top:9px;padding:8px 14px;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;}
+
+/* CHART */
+.mini-chart{padding:13px;margin:10px 16px 0;background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);}
+.ct-lbl{font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;}
+
+/* CAT PILLS */
+.cp-wrap{display:flex;gap:7px;padding:10px 16px 0;overflow-x:auto;scrollbar-width:none;}
+.cp-wrap::-webkit-scrollbar{display:none;}
+.cp{padding:7px 13px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);transition:all .2s;}
+.cp.active{background:var(--accent-purple);color:#fff;border-color:var(--accent-purple);}
+
+/* SAVINGS */
+.sr{display:flex;align-items:center;gap:11px;padding:13px;background:var(--bg-card);border-radius:var(--radius-md);border:1px solid var(--border);margin:8px 16px 0;cursor:pointer;}
+.sr-num{width:27px;height:27px;border-radius:7px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.sr-info{flex:1;}
+.sr-name{font-size:13px;font-weight:700;}
+.sr-reason{font-size:11px;color:var(--text-secondary);margin-top:1px;}
+.sr-save{font-size:14px;font-weight:800;color:var(--accent-green);}
+
+/* CANCEL STEP */
+.cs{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border);}
+.cs:last-child{border-bottom:none;}
+.csn{width:24px;height:24px;background:var(--accent-purple);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px;}
+.cst{font-size:12px;line-height:1.5;color:var(--text-secondary);}
+
+/* CHAT */
+.chat-msgs{padding:14px;display:flex;flex-direction:column;gap:11px;}
+.cb-wrap{}
+.cb-name{font-size:10px;font-weight:700;color:var(--text-secondary);margin-bottom:4px;}
+.cbub{max-width:82%;padding:11px 13px;border-radius:18px;font-size:13px;line-height:1.5;}
+.cbu{align-self:flex-end;background:var(--accent-purple);color:#fff;border-bottom-right-radius:4px;}
+.cba{align-self:flex-start;background:var(--bg-card);border:1px solid var(--border);border-bottom-left-radius:4px;}
+.ci-wrap{padding:11px 14px;display:flex;gap:9px;background:var(--bg-secondary);border-top:1px solid var(--border);flex-shrink:0;}
+.ci{flex:1;background:var(--bg-card);border:1px solid var(--border);border-radius:24px;padding:9px 14px;color:var(--text-primary);font-size:13px;outline:none;font-family:inherit;}
+.csend{width:38px;height:38px;background:var(--accent-purple);border:none;border-radius:50%;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.chip-row{display:flex;gap:7px;flex-wrap:wrap;padding:8px 14px 0;}
+.chip{padding:6px 12px;border-radius:20px;background:var(--bg-card);border:1px solid var(--border);font-size:11px;font-weight:600;cursor:pointer;color:var(--text-primary);white-space:nowrap;}
+
+/* ANALYTICS */
+.ab-item{margin-bottom:11px;}
+.ab-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.ab-lbl{font-size:12px;font-weight:600;}
+.ab-val{font-size:12px;font-weight:800;}
+.ab-bg{height:7px;border-radius:4px;background:var(--bg-elevated);overflow:hidden;}
+.ab-fill{height:100%;border-radius:4px;}
+
+/* SETTINGS */
+.set-row{display:flex;align-items:center;padding:13px 16px;border-bottom:1px solid var(--border);cursor:pointer;}
+.set-icon{font-size:18px;margin-right:12px;}
+.set-info{flex:1;}
+.set-title{font-size:14px;font-weight:600;}
+.set-sub{font-size:11px;color:var(--text-secondary);margin-top:1px;}
+.tog{width:40px;height:23px;background:var(--accent-green);border-radius:12px;position:relative;cursor:pointer;flex-shrink:0;}
+.tog::after{content:'';position:absolute;width:17px;height:17px;background:#fff;border-radius:50%;top:3px;right:3px;transition:right .2s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.tog.off{background:var(--bg-elevated);}
+.tog.off::after{right:calc(100% - 20px);}
+
+/* PREMIUM BANNER */
+.prem{margin:10px 16px 0;padding:15px;background:linear-gradient(135deg,#4c1d95,#1d4ed8);border-radius:var(--radius-md);display:flex;align-items:center;gap:12px;cursor:pointer;}
+.prem-text{flex:1;}
+.prem-title{font-size:14px;font-weight:800;color:#fff;}
+.prem-sub{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px;}
+.prem-cta{padding:7px 13px;background:#fff;color:#4c1d95;border-radius:20px;font-size:11px;font-weight:800;border:none;cursor:pointer;white-space:nowrap;font-family:inherit;}
+
+/* CONNECT */
+.con-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:15px;margin:10px 16px 0;display:flex;align-items:center;gap:13px;cursor:pointer;}
+.con-card.ok{border-color:var(--accent-green);}
+.con-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;}
+.con-info{flex:1;}
+.con-title{font-size:14px;font-weight:700;}
+.con-sub{font-size:11px;color:var(--text-secondary);margin-top:2px;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.anim{animation:fadeUp .3s ease forwards;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:7px;}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+</style>
+</head>
+<body>
+<div class="phone-wrap">
+
+<!-- ════════════════════════════════════
+     MAIN PHONE
+════════════════════════════════════ -->
+<div class="phone" id="mainPhone">
+
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="notch" style="width:110px;height:26px;background:var(--bg-primary);border-radius:0 0 16px 16px;"></div>
+    <div style="display:flex;gap:5px;">📶 🔋</div>
+  </div>
+
+  <!-- NAV TABS (app only) -->
+  <div class="nav-tabs" id="navBar" style="display:none;">
+    <button class="nav-tab active" data-s="dash">Dashboard</button>
+    <button class="nav-tab" data-s="subs">Subscriptions</button>
+    <button class="nav-tab" data-s="leaks">Leaks</button>
+    <button class="nav-tab" data-s="savings">Savings</button>
+    <button class="nav-tab" data-s="ai">AI</button>
+    <button class="nav-tab" data-s="analytics">Analytics</button>
+    <button class="nav-tab" data-s="settings">Settings</button>
+    <div style="width:1px;background:var(--border);margin:3px 2px;flex-shrink:0;"></div>
+    <button class="theme-btn" onclick="toggleTheme()">☀️ Light</button>
+  </div>
+
+  <!-- ══ SPLASH ══ -->
+  <div class="pg active" id="pg-splash" style="background:linear-gradient(180deg,#0d0520,#0a0a0f);">
+    <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:36px 28px;text-align:center;">
+      <div class="logo-box" style="margin:0 auto 18px;">💀</div>
+      <div class="app-name" style="font-size:32px;">Subscription Killer</div>
+      <div class="app-tag" style="font-size:14px;margin:8px 0 36px;">Finds every hidden charge.<br>Kills what's killing your wallet.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%;margin-bottom:28px;">
+        <div style="display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:left;">
+          <span style="font-size:22px;">🔍</span><div><div style="font-size:13px;font-weight:700;">Deep Phone Scan</div><div style="font-size:11px;color:var(--text-secondary);">Scans apps, email, Google Play & Apple subscriptions</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:12px 14px;text-align:left;">
+          <span style="font-size:22px;">🤖</span><div><div style="font-size:13px;font-weight:700;">AI Detection</div><div style="font-size:11px;color:var(--text-secondary);">Double-checks hidden Google & Apple billing</div></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:11px;background:rgba(0,212,106,.06);border:1px solid rgba(0,212,106,.2);border-radius:12px;padding:12px 14px;text-align:left;">
+          <span style="font-size:22px;">💰</span><div><div style="font-size:13px;font-weight:700;color:var(--accent-green);">Average save: $408/year</div><div style="font-size:11px;color:var(--text-secondary);">Based on 50,000 users</div></div>
+        </div>
+      </div>
+      <button class="btn-p" style="margin-bottom:11px;" onclick="goTo('signup')">Get Started — Free</button>
+      <button class="btn-o" onclick="goTo('login')">I have an account</button>
+      <div style="margin-top:18px;font-size:11px;color:var(--text-muted);">By continuing you agree to our <a onclick="goTo('terms')" style="color:var(--accent-purple);cursor:pointer;font-weight:700;">Terms</a> & <a onclick="goTo('privacy')" style="color:var(--accent-purple);cursor:pointer;font-weight:700;">Privacy Policy</a></div>
+    </div>
+  </div>
+
+  <!-- ══ LOGIN ══ -->
+  <div class="pg" id="pg-login">
+    <div class="auth-bg">
+      <div class="auth-logo-wrap" style="padding:30px 32px 16px;">
+        <div class="logo-box">💀</div>
+        <div class="app-name">Welcome back</div>
+        <div class="app-tag">Sign in to your account</div>
+      </div>
+      <div class="form-area">
+        <button class="sbtn" onclick="socialLogin('Google')"><span style="font-size:18px;">🌐</span> Continue with Google</button>
+        <button class="sbtn" onclick="socialLogin('Apple')"><span style="font-size:18px;">🍎</span> Continue with Apple</button>
+        <div class="sdiv">or sign in with email</div>
+        <div class="ig"><label class="ilabel">Email Address</label><div class="iwrap"><span class="ii">✉️</span><input class="iinput" id="li-email" type="email" placeholder="you@email.com"></div><div class="ferr" id="li-email-err">Please enter a valid email.</div></div>
+        <div class="ig"><label class="ilabel">Password</label><div class="iwrap"><span class="ii">🔒</span><input class="iinput" id="li-pass" type="password" placeholder="••••••••"><span class="ieye" onclick="togglePwd('li-pass')">👁️</span></div><div class="ferr" id="li-pass-err">Password required.</div></div>
+        <div class="flink" onclick="goTo('forgot')">Forgot password?</div>
+        <button class="btn-p" id="li-btn" onclick="doLogin()">Sign In</button>
+        <div style="margin-top:14px;padding:12px;background:var(--bg-elevated);border-radius:var(--radius-sm);border:1px solid var(--border);">
+          <div style="font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Demo credentials</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Email: <strong>demo@subkiller.app</strong> · Password: <strong>demo1234</strong></div>
+        </div>
+        <div class="aswitch">No account? <a onclick="goTo('signup')">Sign up free</a></div>
+        <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--text-muted);"><a onclick="goTo('terms')" style="color:var(--accent-purple);cursor:pointer;">Terms</a> &nbsp;·&nbsp; <a onclick="goTo('privacy')" style="color:var(--accent-purple);cursor:pointer;">Privacy</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SIGN UP ══ -->
+  <div class="pg" id="pg-signup">
+    <div class="auth-bg">
+      <div class="auth-logo-wrap" style="padding:24px 32px 12px;">
+        <div class="logo-box" style="width:62px;height:62px;font-size:30px;border-radius:18px;">💀</div>
+        <div class="app-name" style="font-size:22px;">Create Account</div>
+        <div class="app-tag" style="font-size:12px;">Join 50,000+ people saving money</div>
+      </div>
+      <div class="form-area" style="padding-top:20px;">
+        <button class="sbtn" onclick="socialLogin('Google')"><span style="font-size:18px;">🌐</span> Sign up with Google</button>
+        <button class="sbtn" onclick="socialLogin('Apple')"><span style="font-size:18px;">🍎</span> Sign up with Apple</button>
+        <div class="sdiv">or sign up with email</div>
+        <div class="ig"><label class="ilabel">Full Name</label><div class="iwrap"><span class="ii">👤</span><input class="iinput" id="su-name" type="text" placeholder="Alex Johnson" oninput="validateSignup()"></div><div class="ferr" id="su-name-err">Please enter your name.</div></div>
+        <div class="ig"><label class="ilabel">Email Address</label><div class="iwrap"><span class="ii">✉️</span><input class="iinput" id="su-email" type="email" placeholder="you@email.com" oninput="validateSignup()"></div><div class="ferr" id="su-email-err">Please enter a valid email.</div></div>
+        <div class="ig"><label class="ilabel">Password</label><div class="iwrap"><span class="ii">🔒</span><input class="iinput" id="su-pass" type="password" placeholder="Min. 8 characters" oninput="checkStr();validateSignup();"><span class="ieye" onclick="togglePwd('su-pass')">👁️</span></div><div class="sb-wrap" id="sb-wrap"><div class="sb"><div class="ss" id="ss1"></div><div class="ss" id="ss2"></div><div class="ss" id="ss3"></div><div class="ss" id="ss4"></div></div><div class="slabel" id="sl"></div></div><div class="ferr" id="su-pass-err">Min. 8 characters required.</div></div>
+        <div class="ig"><label class="ilabel">Confirm Password</label><div class="iwrap"><span class="ii">🔒</span><input class="iinput" id="su-confirm" type="password" placeholder="Repeat password" oninput="validateSignup()"></div><div class="ferr" id="su-confirm-err">Passwords do not match.</div></div>
+
+        <!-- MANDATORY TERMS BOX -->
+        <div class="tc-box" id="tc-box">
+          <div class="tc-row">
+            <div class="cb" id="tc-cb" onclick="toggleTC()"></div>
+            <div class="tc-text">I have read and agree to the <a onclick="goToFromSignup('terms')">Terms of Service</a> and <a onclick="goToFromSignup('privacy')">Privacy Policy</a>. I am at least 13 years old.
+            </div>
+          </div>
+          <div class="tc-note">⚠️ You must accept to create an account</div>
+        </div>
+        <div class="ferr" id="tc-err">You must accept the Terms to continue.</div>
+
+        <!-- SIGN UP BUTTON — disabled by default -->
+        <button class="btn-p" id="su-btn" onclick="doSignup()" disabled style="margin-top:4px;">Create Account — Free</button>
+        <div id="su-hint" style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:8px;">☝️ Accept Terms above to enable sign up</div>
+
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-secondary);"><span style="color:var(--accent-green);">✅</span> No credit card required</div>
+          <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-secondary);"><span style="color:var(--accent-green);">✅</span> Bank-level 256-bit encryption</div>
+          <div style="display:flex;align-items:center;gap:9px;font-size:12px;color:var(--text-secondary);"><span style="color:var(--accent-green);">✅</span> Cancel anytime</div>
+        </div>
+        <div class="aswitch">Already have an account? <a onclick="goTo('login')">Sign In</a></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FORGOT PASSWORD ══ -->
+  <div class="pg" id="pg-forgot">
+    <div class="auth-bg">
+      <div class="auth-logo-wrap" style="padding:40px 32px 20px;">
+        <div style="font-size:56px;margin-bottom:14px;">🔑</div>
+        <div class="app-name" style="font-size:22px;">Reset Password</div>
+        <div class="app-tag">Enter your email and we'll send a reset link</div>
+      </div>
+      <div class="form-area">
+        <div class="ig"><label class="ilabel">Email Address</label><div class="iwrap"><span class="ii">✉️</span><input class="iinput" id="fp-email" type="email" placeholder="you@email.com"></div></div>
+        <button class="btn-p" onclick="doForgot()">Send Reset Link</button>
+        <button class="btn-o" onclick="goTo('login')">← Back to Sign In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SCAN SCREEN (phone scan after signup) ══ -->
+  <div class="pg" id="pg-scan">
+    <div class="auth-bg" style="justify-content:center;">
+      <div class="scan-wrap">
+        <div style="position:relative;width:160px;height:160px;margin:0 auto 22px;">
+          <div class="scan-radar">
+            <div class="scan-sweep"></div>
+            <span class="scan-icon">🔍</span>
+          </div>
+          <div class="scan-dot" id="dot1" style="top:20px;right:30px;"></div>
+          <div class="scan-dot" id="dot2" style="display:none;bottom:25px;left:20px;background:var(--accent-orange);box-shadow:0 0 8px var(--accent-orange);"></div>
+          <div class="scan-dot" id="dot3" style="display:none;top:50%;right:10px;background:var(--accent-red);box-shadow:0 0 8px var(--accent-red);"></div>
+        </div>
+        <div class="scan-title" id="scan-title">Scanning Your Phone…</div>
+        <div class="scan-sub" id="scan-sub">Looking through apps, email receipts,<br>Google Play & Apple subscriptions</div>
+        <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%;"></div></div>
+        <div id="prog-pct" style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:14px;">0%</div>
+        <div class="scan-log" id="scan-log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ALL CLEAR (no subs found) ══ -->
+  <div class="pg" id="pg-allclear">
+    <div class="auth-bg" style="justify-content:center;">
+      <div class="allclear">
+        <div class="ac-icon">😎</div>
+        <div class="ac-title">You Good, Don't Worry!</div>
+        <div class="ac-sub">We scanned your phone top to bottom and couldn't find any suspicious recurring charges. Your wallet is clean! 🎉</div>
+        <div class="ac-stats">
+          <div class="ac-stat"><div class="ac-stat-val green">0</div><div class="ac-stat-label">Issues Found</div></div>
+          <div class="ac-stat"><div class="ac-stat-val green">$0</div><div class="ac-stat-label">Wasted/mo</div></div>
+          <div class="ac-stat"><div class="ac-stat-val green">✅</div><div class="ac-stat-label">All Clear</div></div>
+        </div>
+        <div style="background:var(--accent-green-dim);border:1px solid rgba(0,212,106,.3);border-radius:var(--radius-md);padding:16px;width:100%;margin-bottom:20px;text-align:left;">
+          <div style="font-size:13px;font-weight:700;color:var(--accent-green);margin-bottom:8px;">✅ What we checked:</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.8;">🔍 App Store subscriptions<br>🔍 Google Play subscriptions<br>🔍 Email receipts<br>🔍 Bank recurring charges<br>🔍 Hidden Google billing<br>🔍 Apple family sharing</div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;width:100%;margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🔬 Want a DEEP Scan?</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;">Run a forensic double-scan that catches hidden charges in Google's billing infrastructure, dark patterns, and obscure trial traps — $3.99 one-time.</div>
+          <button class="btn-p" onclick="goTo('deepscan')" style="margin-top:12px;padding:12px;">🔬 Run Deep Scan — $3.99</button>
+        </div>
+        <button class="btn-p green" onclick="enterApp()">Enter Dashboard 🏠</button>
+        <div style="margin-top:14px;font-size:12px;color:var(--text-muted);">We'll keep monitoring and alert you if anything changes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RESULTS (subs found) ══ -->
+  <div class="pg" id="pg-results">
+    <div class="auth-bg" style="justify-content:center;">
+      <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding:28px 22px;">
+        <div style="text-align:center;margin-bottom:22px;">
+          <div style="font-size:56px;margin-bottom:12px;animation:pop .5s ease;">🚨</div>
+          <div style="font-size:24px;font-weight:900;letter-spacing:-.5px;margin-bottom:6px;">Found 12 Subscriptions!</div>
+          <div style="font-size:13px;color:var(--text-secondary);line-height:1.5;">You're spending <strong style="color:var(--accent-red);">$87.50/month</strong> on subscriptions.<br>We found <strong style="color:var(--accent-green);">$34/month</strong> in potential savings.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;text-align:center;"><div style="font-size:22px;font-weight:900;color:var(--accent-red);">$87.50</div><div style="font-size:10px;color:var(--text-secondary);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Monthly Spend</div></div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;text-align:center;"><div style="font-size:22px;font-weight:900;color:var(--accent-green);">$34/mo</div><div style="font-size:10px;color:var(--text-secondary);margin-top:3px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Can Be Saved</div></div>
+        </div>
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;margin-bottom:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Detected Subscriptions</div>
+          <div id="result-list"></div>
+        </div>
+        <!-- DEEP SCAN CTA -->
+        <div style="background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(255,71,87,.1));border:1px solid rgba(124,58,237,.3);border-radius:var(--radius-md);padding:16px;margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:800;margin-bottom:4px;">🔬 Run Deep Scan — $3.99</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:10px;">Double-scan everything. Catches hidden Google charges, obscure Apple trials, and dark-pattern subscriptions our standard scan might miss. One-time fee.</div>
+          <button class="btn-p" onclick="goTo('deepscan')" style="padding:12px;">🔬 Unlock Deep Scan — $3.99</button>
+        </div>
+        <button class="btn-p green" onclick="enterApp()">View Full Dashboard 💰</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DEEP SCAN PAYWALL ══ -->
+  <div class="pg" id="pg-deepscan">
+    <div class="paywall">
+      <div class="pw-hero">
+        <span class="pw-icon">🔬</span>
+        <div class="pw-title">Deep Scan</div>
+        <div class="pw-sub">Forensic-level double scan. Catches what regular scans miss — hidden Google billing, Apple dark patterns, obscure trial traps.</div>
+        <div class="pw-price">$3.99</div>
+        <div class="pw-price-sub">One-time payment · No subscription</div>
+      </div>
+      <div class="pw-body">
+        <div style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">What Deep Scan Does</div>
+        <div class="pw-feature">
+          <div class="pw-feat-icon" style="background:rgba(124,58,237,.15);">🔍</div>
+          <div><div class="pw-feat-title">Double-Layer Scan</div><div class="pw-feat-sub">Runs the scan TWICE with different detection algorithms. Cross-references results to catch anything missed first time.</div></div>
+        </div>
+        <div class="pw-feature">
+          <div class="pw-feat-icon" style="background:rgba(255,71,87,.1);">🕵️</div>
+          <div><div class="pw-feat-title">Hidden Google Charges</div><div class="pw-feat-sub">Digs into Google One, YouTube Premium, Google Play Pass, Stadia credits, and obscure API billing that hides in your Google account.</div></div>
+        </div>
+        <div class="pw-feature">
+          <div class="pw-feat-icon" style="background:rgba(255,165,2,.1);">🍎</div>
+          <div><div class="pw-feat-title">Apple Dark Patterns</div><div class="pw-feat-sub">Finds App Store subs enrolled during free trials, family sharing charges, iCloud upgrades, and Apple One bundle hidden costs.</div></div>
+        </div>
+        <div class="pw-feature">
+          <div class="pw-feat-icon" style="background:rgba(59,130,246,.1);">🏦</div>
+          <div><div class="pw-feat-title">Bank-Level Transaction Analysis</div><div class="pw-feat-sub">Cross-references 24 months of transactions. Finds micro-charges ($0.99–$1.99) that add up to hundreds per year.</div></div>
+        </div>
+        <div class="pw-feature">
+          <div class="pw-feat-icon" style="background:rgba(0,212,106,.1);">📧</div>
+          <div><div class="pw-feat-title">Email Receipt Forensics</div><div class="pw-feat-sub">Reads every receipt email including spam folder. Catches trials you forgot you signed up for months ago.</div></div>
+        </div>
+        <div class="pw-feature">
+          <div class="pw-feat-icon" style="background:rgba(124,58,237,.15);">🔄</div>
+          <div><div class="pw-feat-title">Recurring Charge Fingerprinting</div><div class="pw-feat-sub">Identifies identical or near-identical amounts hitting your account on cycles — even if the merchant name changed.</div></div>
+        </div>
+        <div style="background:var(--accent-green-dim);border:1px solid rgba(0,212,106,.3);border-radius:var(--radius-md);padding:14px;margin:14px 0;">
+          <div style="font-size:13px;font-weight:800;color:var(--accent-green);">💰 Average deep scan finds $67 more in hidden charges</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">Users who run deep scan save an average $127/year more than standard scan users.</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--border);">
+          <div style="font-size:13px;color:var(--text-secondary);">Standard scan</div>
+          <div class="badge b-green">Included · Free</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:700;">Deep Scan (one-time)</div>
+          <div style="font-size:16px;font-weight:900;color:var(--accent-purple);">$3.99</div>
+        </div>
+      </div>
+      <div class="pw-cta">
+        <button class="btn-p" onclick="showPayModal()" style="margin-bottom:10px;">🔬 Unlock Deep Scan — $3.99</button>
+        <button class="btn-o" onclick="goBack()">Not now</button>
+        <div style="text-align:center;margin-top:12px;font-size:11px;color:var(--text-muted);">🔒 Secure payment · No recurring charge · Instant access</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PAYMENT MODAL ══ -->
+  <div class="modal-overlay" id="pay-modal" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-handle"></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+        <div style="font-size:28px;">🔬</div>
+        <div><div class="modal-title">Deep Scan — $3.99</div><div style="font-size:12px;color:var(--text-secondary);">One-time · No recurring charge</div></div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:14px 0;"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Card Details</div>
+      <input class="card-field" placeholder="Card number" maxlength="19" oninput="fmtCard(this)" type="tel">
+      <div class="card-row">
+        <input class="card-field" placeholder="MM / YY" maxlength="7" oninput="fmtExpiry(this)" type="tel" style="margin-bottom:0;">
+        <input class="card-field" placeholder="CVV" maxlength="3" type="tel" style="margin-bottom:0;">
+      </div>
+      <input class="card-field" placeholder="Cardholder name" style="margin-top:10px;">
+      <button class="btn-p" style="margin-top:14px;" id="pay-btn" onclick="doPay()">Pay $3.99 Securely</button>
+      <div class="pay-secure">🔒 256-bit SSL · Powered by Stripe</div>
+    </div>
+  </div>
+
+  <!-- ══ DEEP SCAN RUNNING ══ -->
+  <div class="pg" id="pg-deepscan-run">
+    <div class="auth-bg" style="justify-content:center;">
+      <div class="scan-wrap">
+        <div style="position:relative;width:160px;height:160px;margin:0 auto 22px;">
+          <div class="scan-radar" style="border-color:rgba(255,71,87,.4);">
+            <div class="scan-sweep" style="background:linear-gradient(90deg,transparent,var(--accent-red));"></div>
+            <div class="scan-radar" style="width:110px;height:110px;border-color:rgba(255,71,87,.25);position:absolute;"></div>
+            <span class="scan-icon">🔬</span>
+          </div>
+        </div>
+        <div style="background:var(--accent-red-dim);border:1px solid rgba(255,71,87,.3);border-radius:10px;padding:8px 14px;margin-bottom:16px;font-size:12px;font-weight:700;color:var(--accent-red);">🔬 DEEP SCAN — PASS 1 OF 2</div>
+        <div class="scan-title" id="ds-title">Forensic Scan Running…</div>
+        <div class="scan-sub" id="ds-sub">Double-checking everything. This catches<br>what standard scans miss.</div>
+        <div class="prog-bar"><div class="prog-fill" id="ds-prog" style="width:0%;background:linear-gradient(90deg,var(--accent-red),var(--accent-purple));"></div></div>
+        <div id="ds-pct" style="font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:14px;">0%</div>
+        <div class="scan-log" id="ds-log" style="border-color:rgba(255,71,87,.15);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DEEP SCAN RESULTS ══ -->
+  <div class="pg" id="pg-deepresults">
+    <div style="flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:20px;background:var(--bg-secondary);">
+      <div style="padding:24px 20px 16px;background:linear-gradient(135deg,#2a0a0a,#0a0a0f);text-align:center;position:relative;overflow:hidden;">
+        <div style="position:absolute;width:150px;height:150px;background:radial-gradient(circle,rgba(255,71,87,.3),transparent 70%);top:-40px;right:-20px;border-radius:50%;"></div>
+        <div style="font-size:48px;margin-bottom:10px;animation:pop .5s ease;">🔬</div>
+        <div style="font-size:22px;font-weight:900;color:#fff;margin-bottom:4px;">Deep Scan Complete!</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.65);">We ran 2 passes with 6 detection algorithms</div>
+        <div style="display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);">
+          <div style="flex:1;text-align:center;"><div style="font-size:20px;font-weight:900;color:var(--accent-red);">3</div><div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;font-weight:700;">New Found</div></div>
+          <div style="flex:1;text-align:center;"><div style="font-size:20px;font-weight:900;color:var(--accent-orange);">$67</div><div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;font-weight:700;">Extra/month</div></div>
+          <div style="flex:1;text-align:center;"><div style="font-size:20px;font-weight:900;color:var(--accent-green);">$804</div><div style="font-size:9px;color:rgba(255,255,255,.5);text-transform:uppercase;font-weight:700;">Yearly Save</div></div>
+        </div>
+      </div>
+      <div style="padding:16px 16px 0;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🕵️ Hidden Charges Found by Deep Scan</div>
+        <div style="background:var(--bg-card);border:1px solid rgba(255,71,87,.3);border-radius:var(--radius-md);overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border);">
+            <div style="width:38px;height:38px;background:rgba(255,165,2,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌐</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Google One Storage</div><div style="font-size:11px;color:var(--text-secondary);">Hidden in Google account · 14 months</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:800;color:var(--accent-red);">$2.99/mo</div><div class="badge b-red" style="margin-top:3px;">Hidden</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--border);">
+            <div style="width:38px;height:38px;background:rgba(255,71,87,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🍎</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Apple TV+ (Family)</div><div style="font-size:11px;color:var(--text-secondary);">Enrolled via Apple One trial — forgot to cancel</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:800;color:var(--accent-red);">$9.99/mo</div><div class="badge b-red" style="margin-top:3px;">Dark Pattern</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:13px 14px;">
+            <div style="width:38px;height:38px;background:rgba(255,71,87,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎮</div>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Micro-charges ($0.99×56)</div><div style="font-size:11px;color:var(--text-secondary);">56 micro-charges over 18 months — gaming app</div></div>
+            <div style="text-align:right;"><div style="font-size:13px;font-weight:800;color:var(--accent-red);">$55.44 total</div><div class="badge b-red" style="margin-top:3px;">Micro-leak</div></div>
+          </div>
+        </div>
+        <div style="background:var(--accent-green-dim);border:1px solid rgba(0,212,106,.3);border-radius:var(--radius-md);padding:14px;margin-top:12px;">
+          <div style="font-size:13px;font-weight:800;color:var(--accent-green);margin-bottom:4px;">💰 Total extra savings from Deep Scan</div>
+          <div style="font-size:30px;font-weight:900;color:var(--accent-green);letter-spacing:-1px;">$804/year</div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">That's $200.25× your $3.99 investment</div>
+        </div>
+        <button class="btn-p green" style="margin-top:14px;" onclick="enterApp()">View Full Dashboard 💰</button>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TERMS OF SERVICE ══ -->
+  <div class="pg" id="pg-terms">
+    <div class="pol-header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div><div style="font-size:15px;font-weight:800;">Terms of Service</div><div style="font-size:11px;color:var(--text-secondary);">Subscription Killer · v2.1</div></div>
+      <div style="width:34px;"></div>
+    </div>
+    <div class="pol-body">
+      <div class="pol-updated">Last updated: June 23, 2025</div>
+      <div class="pol-hi">Please read these Terms carefully before using Subscription Killer. By creating an account you agree to be bound by these terms.</div>
+      <div class="pol-h">1. Acceptance of Terms</div>
+      <div class="pol-p">By accessing or using Subscription Killer ("Service"), you agree to these Terms of Service. If you do not agree, do not use the Service. These Terms are a legally binding agreement between you and Subscription Killer Inc.</div>
+      <div class="pol-h">2. Description of Service</div>
+      <div class="pol-p">Subscription Killer is a financial management app that helps users:</div>
+      <div class="pol-b">Identify and track recurring subscription charges</div>
+      <div class="pol-b">Detect free trial periods and upcoming renewals</div>
+      <div class="pol-b">Receive AI-powered spending recommendations</div>
+      <div class="pol-b">Access cancellation assistance and guides</div>
+      <div class="pol-b">Run standard and deep forensic scans of financial data</div>
+      <div class="pol-h">3. Eligibility</div>
+      <div class="pol-p">You must be at least 13 years old to use the Service. By using the Service you confirm you meet this requirement.</div>
+      <div class="pol-h">4. Account Registration</div>
+      <div class="pol-p">You agree to provide accurate information, keep your password secure, notify us of unauthorized access, and take responsibility for all activity under your account.</div>
+      <div class="pol-h">5. Subscription Plans & Billing</div>
+      <div class="pol-b">Free Plan: Track up to 10 subscriptions, basic alerts, health scores</div>
+      <div class="pol-b">Premium Plan: $4.99/month or $39/year — unlimited subs, AI insights, bank sync, analytics</div>
+      <div class="pol-b">Deep Scan: $3.99 one-time payment — forensic double-scan, no recurring charge</div>
+      <div class="pol-b">All fees non-refundable except where required by law</div>
+      <div class="pol-b">We may change pricing with 30 days' notice</div>
+      <div class="pol-h">6. Deep Scan Feature</div>
+      <div class="pol-p">The Deep Scan is a one-time $3.99 purchase that performs two full passes of your connected financial data using six detection algorithms. Results are provided for informational purposes only and do not constitute financial advice. We do not guarantee detection of 100% of all charges.</div>
+      <div class="pol-h">7. Bank Account & Financial Data</div>
+      <div class="pol-p">When you connect a bank account you authorize read-only access via Plaid. We cannot initiate transfers. You agree to Plaid's End User Privacy Policy. Your financial data is used solely to provide the Service.</div>
+      <div class="pol-h">8. Prohibited Uses</div>
+      <div class="pol-b">Using the Service for unlawful purposes</div>
+      <div class="pol-b">Reverse engineering or decompiling the Service</div>
+      <div class="pol-b">Transmitting malware or malicious code</div>
+      <div class="pol-b">Impersonating another person or entity</div>
+      <div class="pol-h">9. AI Features Disclaimer</div>
+      <div class="pol-p">AI recommendations are for informational purposes only and are not financial advice. We do not guarantee accuracy of subscription detection, health scores, or savings projections.</div>
+      <div class="pol-h">10. Limitation of Liability</div>
+      <div class="pol-p">TO THE MAXIMUM EXTENT PERMITTED BY LAW, SUBSCRIPTION KILLER INC. SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNTS YOU PAID IN THE PRECEDING 12 MONTHS.</div>
+      <div class="pol-h">11. Governing Law</div>
+      <div class="pol-p">These Terms are governed by the laws of the State of Delaware. Disputes will be resolved through binding arbitration.</div>
+      <div class="pol-h">12. Contact</div>
+      <div class="pol-p">legal@subscriptionkiller.app · Subscription Killer Inc., 123 Fintech Ave, Wilmington, DE 19801</div>
+      <div style="height:24px;"></div>
+      <button class="btn-p" onclick="goBack()">← Back</button>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- ══ PRIVACY POLICY ══ -->
+  <div class="pg" id="pg-privacy">
+    <div class="pol-header">
+      <div class="back-btn" onclick="goBack()">←</div>
+      <div><div style="font-size:15px;font-weight:800;">Privacy Policy</div><div style="font-size:11px;color:var(--text-secondary);">Subscription Killer · v2.1</div></div>
+      <div style="width:34px;"></div>
+    </div>
+    <div class="pol-body">
+      <div class="pol-updated">Last updated: June 23, 2025</div>
+      <div class="pol-hi">Your privacy matters. We collect only what's necessary and never sell your data to third parties.</div>
+      <div class="pol-h">1. Information We Collect</div>
+      <div class="pol-p"><strong>Account:</strong> Name, email, hashed password, profile info.</div>
+      <div class="pol-p"><strong>Financial Data:</strong> Transaction history via Plaid (read-only, encrypted at rest).</div>
+      <div class="pol-p"><strong>Usage Data:</strong> Features used, screens visited, AI queries.</div>
+      <div class="pol-p"><strong>Device Data:</strong> Device type, OS, app version, push token, IP address.</div>
+      <div class="pol-h">2. How We Use Your Information</div>
+      <div class="pol-b">Provide, maintain, and improve the Service including Deep Scan</div>
+      <div class="pol-b">Detect subscriptions and recurring charges on your behalf</div>
+      <div class="pol-b">Generate AI-powered financial insights</div>
+      <div class="pol-b">Send smart alerts (renewals, price changes, trials)</div>
+      <div class="pol-b">Process payments and manage your plan</div>
+      <div class="pol-b">Prevent fraud and unauthorized access</div>
+      <div class="pol-h">3. Data Sharing</div>
+      <div class="pol-p">We do NOT sell your data. We share only with:</div>
+      <div class="pol-b"><strong>Plaid</strong> — bank connection (subject to Plaid's Privacy Policy)</div>
+      <div class="pol-b"><strong>Firebase/Google</strong> — auth, database, push notifications</div>
+      <div class="pol-b"><strong>OpenAI</strong> — AI features (queries anonymized, not used for training)</div>
+      <div class="pol-b"><strong>Stripe</strong> — payment processing (we never see card details)</div>
+      <div class="pol-b"><strong>Law enforcement</strong> — only when required by valid legal process</div>
+      <div class="pol-h">4. Data Security</div>
+      <div class="pol-b">256-bit AES encryption at rest for all financial data</div>
+      <div class="pol-b">TLS 1.3 encryption in transit</div>
+      <div class="pol-b">MFA support · Regular security audits</div>
+      <div class="pol-b">Automatic session expiry and anomaly detection</div>
+      <div class="pol-h">5. Your Rights</div>
+      <div class="pol-b"><strong>Access</strong> — request a copy of your data</div>
+      <div class="pol-b"><strong>Deletion</strong> — delete account from Settings (data removed within 30 days)</div>
+      <div class="pol-b"><strong>Portability</strong> — export your data in machine-readable format</div>
+      <div class="pol-b"><strong>CCPA</strong> — California residents: right to know, delete, opt-out of sale (we don't sell)</div>
+      <div class="pol-b"><strong>GDPR</strong> — EU users: right to erasure, restriction, portability, DPO contact</div>
+      <div class="pol-h">6. Children's Privacy</div>
+      <div class="pol-p">The Service is not directed to children under 13. We do not knowingly collect data from children under 13.</div>
+      <div class="pol-h">7. Contact</div>
+      <div class="pol-p">privacy@subscriptionkiller.app<br>DPO: dpo@subscriptionkiller.app<br>EU rep: gdpr@subscriptionkiller.app</div>
+      <div style="height:24px;"></div>
+      <button class="btn-p" onclick="goBack()">← Back</button>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- ════ APP SCREENS ════ -->
+
+  <!-- DASHBOARD -->
+  <div class="pg" id="pg-dash">
+    <div class="scroll">
+      <div style="padding:18px 18px 0;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:24px;font-weight:800;letter-spacing:-.5px;">💀 Subscription Killer</div><div style="font-size:13px;color:var(--text-secondary);">Hey Alex 👋 Here's your money overview</div></div>
+        <div style="position:relative;cursor:pointer;"><span style="font-size:24px;">🔔</span><div style="position:absolute;top:0;right:0;width:9px;height:9px;background:var(--accent-red);border-radius:50%;border:2px solid var(--bg-secondary);"></div></div>
+      </div>
+      <div class="hero-card">
+        <div class="h-label">Total Monthly Spend</div>
+        <div class="h-amount">$87.50</div>
+        <div class="h-sub">$1,050.00 projected yearly</div>
+        <div class="h-stats">
+          <div class="hs"><div class="hs-val">12</div><div class="hs-lbl">Active Subs</div></div>
+          <div class="hs"><div class="hs-val" style="color:#00d46a;">$34</div><div class="hs-lbl">Savings Avail.</div></div>
+          <div class="hs"><div class="hs-val" style="color:#ffa502;">3</div><div class="hs-lbl">Issues Found</div></div>
+        </div>
+      </div>
+      <div class="mg">
+        <div class="mc"><div class="ml">Yearly Cost</div><div class="mv">$1,050</div><div class="mch red">↑ 18% vs last yr</div></div>
+        <div class="mc"><div class="ml">Potential Savings</div><div class="mv green">$408</div><div class="mch green">Annual if you act</div></div>
+        <div class="mc"><div class="ml">Health Score</div><div class="mv orange">58/100</div><div class="mch orange">Needs attention</div></div>
+        <div class="mc"><div class="ml">Alerts</div><div class="mv red">3 active</div><div class="mch red">Action needed</div></div>
+      </div>
+      <div class="mini-chart">
+        <div class="ct-lbl">📈 6-Month Trend</div>
+        <svg width="100%" height="84" viewBox="0 0 340 84"><defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff4757" stop-opacity=".35"/><stop offset="100%" stop-color="#ff4757" stop-opacity="0"/></linearGradient><linearGradient id="g2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00d46a" stop-opacity=".35"/><stop offset="100%" stop-color="#00d46a" stop-opacity="0"/></linearGradient></defs>
+        <path d="M0,52 L68,46 L136,38 L204,33 L272,23 L340,26 L340,82 L0,82Z" fill="url(#g1)"/>
+        <path d="M0,52 L68,46 L136,38 L204,33 L272,23 L340,26" fill="none" stroke="#ff4757" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M0,78 L68,74 L136,68 L204,62 L272,54 L340,48 L340,82 L0,82Z" fill="url(#g2)"/>
+        <path d="M0,78 L68,74 L136,68 L204,62 L272,54 L340,48" fill="none" stroke="#00d46a" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="272" cy="23" r="4" fill="#ff4757" stroke="#fff" stroke-width="2"/>
+        <circle cx="272" cy="54" r="4" fill="#00d46a" stroke="#fff" stroke-width="2"/>
+        <text x="2" y="82" fill="#555570" font-size="9">Jan</text><text x="57" y="82" fill="#555570" font-size="9">Feb</text><text x="123" y="82" fill="#555570" font-size="9">Mar</text><text x="191" y="82" fill="#555570" font-size="9">Apr</text><text x="254" y="82" fill="#555570" font-size="9">May</text><text x="314" y="82" fill="#555570" font-size="9">Jun</text>
+        <rect x="0" y="2" width="7" height="7" rx="2" fill="#ff4757" opacity=".8"/><text x="11" y="9" fill="#8888aa" font-size="9">Spend</text>
+        <rect x="57" y="2" width="7" height="7" rx="2" fill="#00d46a" opacity=".8"/><text x="68" y="9" fill="#8888aa" font-size="9">Savings</text></svg>
+      </div>
+      <!-- DEEP SCAN PROMO -->
+      <div style="margin:10px 16px 0;padding:14px;background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(255,71,87,.08));border:1px solid rgba(124,58,237,.3);border-radius:var(--radius-md);cursor:pointer;" onclick="goTo('deepscan')">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:28px;">🔬</span>
+          <div style="flex:1;"><div style="font-size:13px;font-weight:800;">Deep Scan Available</div><div style="font-size:11px;color:var(--text-secondary);">Double-check for hidden Google & Apple charges</div></div>
+          <div style="background:var(--accent-purple);color:#fff;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:800;white-space:nowrap;">$3.99</div>
+        </div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">🚨 Active Alerts</div><div class="sec-action">See all</div></div>
+      <div class="al" style="background:var(--accent-red-dim);">
+        <div class="al-icon">🎵</div>
+        <div class="al-body"><div class="al-title">Duplicate Music Services</div><div class="al-msg">Paying for Spotify AND Apple Music. Save $131/yr.</div><button class="al-btn" style="background:var(--accent-red);color:#fff;">Cancel Apple Music →</button></div>
+      </div>
+      <div class="al" style="background:var(--accent-orange-dim);">
+        <div class="al-icon">⏰</div>
+        <div class="al-body"><div class="al-title">Trial Ending in 3 Days</div><div class="al-msg">Disney+ trial ends Jul 26 — $7.99/mo will charge.</div><button class="al-btn" style="background:var(--accent-orange);color:#fff;">Cancel Before Charge →</button></div>
+      </div>
+      <div class="prem"><div style="font-size:24px;">⚡</div><div class="prem-text"><div class="prem-title">Unlock Premium</div><div class="prem-sub">Unlimited · AI · Bank sync</div></div><button class="prem-cta">$4.99/mo</button></div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- SUBSCRIPTIONS -->
+  <div class="pg" id="pg-subs">
+    <div class="scroll">
+      <div style="padding:18px 18px 0;display:flex;justify-content:space-between;align-items:center;">
+        <div><div style="font-size:22px;font-weight:800;">My Subscriptions</div><div style="font-size:12px;color:var(--text-secondary);">12 active · $87.50/month</div></div>
+        <button style="background:var(--accent-purple);color:#fff;border:none;border-radius:20px;padding:7px 13px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">+ Add</button>
+      </div>
+      <div class="cp-wrap"><div class="cp active">All (12)</div><div class="cp">Entertainment</div><div class="cp">Productivity</div><div class="cp">Fitness</div><div class="cp">Utilities</div></div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="si"><div class="si-logo">🎵</div><div class="si-info"><div class="si-name">Spotify Premium</div><div class="si-meta">Entertainment</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:95%;background:#00d46a;"></div></div><span class="hs-num green">95</span></div></div><div class="si-right"><div class="si-price">$9.99</div><div class="si-date">Jul 15</div><div class="badge b-green" style="margin-top:3px;">✅ Keep</div></div></div>
+        <div class="si"><div class="si-logo">🎬</div><div class="si-info"><div class="si-name">Netflix</div><div class="si-meta">Entertainment</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:78%;background:#00d46a;"></div></div><span class="hs-num green">78</span></div></div><div class="si-right"><div class="si-price">$15.49</div><div class="si-date">Jul 8</div><div class="badge b-blue" style="margin-top:3px;">✅ Good</div></div></div>
+        <div class="si"><div class="si-logo">🤖</div><div class="si-info"><div class="si-name">ChatGPT Plus</div><div class="si-meta">Productivity</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:88%;background:#00d46a;"></div></div><span class="hs-num green">88</span></div></div><div class="si-right"><div class="si-price">$20.00</div><div class="si-date">Jul 22</div><div class="badge b-green" style="margin-top:3px;">✅ Keep</div></div></div>
+        <div class="si"><div class="si-logo">🎨</div><div class="si-info"><div class="si-name">Adobe Creative Cloud</div><div class="si-meta">Productivity · ↑25%</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:40%;background:#ffa502;"></div></div><span class="hs-num orange">40</span></div></div><div class="si-right"><div class="si-price red">$54.99</div><div class="si-date">Jul 18</div><div class="badge b-orange" style="margin-top:3px;">⚠️ Review</div></div></div>
+        <div class="si"><div class="si-logo">🎵</div><div class="si-info"><div class="si-name">Apple Music</div><div class="si-meta">Duplicate of Spotify!</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:30%;background:#ff4757;"></div></div><span class="hs-num red">30</span></div></div><div class="si-right"><div class="si-price red">$10.99</div><div class="si-date">Jul 12</div><div class="badge b-red" style="margin-top:3px;">🔴 Cancel</div></div></div>
+        <div class="si"><div class="si-logo">💪</div><div class="si-info"><div class="si-name">Gym Membership</div><div class="si-meta">90 days no check-in</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:20%;background:#ff4757;"></div></div><span class="hs-num red">20</span></div></div><div class="si-right"><div class="si-price red">$45.00</div><div class="si-date">Jul 1</div><div class="badge b-red" style="margin-top:3px;">🔴 Cancel</div></div></div>
+        <div class="si"><div class="si-logo">☁️</div><div class="si-info"><div class="si-name">iCloud 200GB</div><div class="si-meta">Utilities · Daily use</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:92%;background:#00d46a;"></div></div><span class="hs-num green">92</span></div></div><div class="si-right"><div class="si-price">$2.99</div><div class="si-date">Jul 5</div><div class="badge b-green" style="margin-top:3px;">✅ Keep</div></div></div>
+        <div class="si"><div class="si-logo">🎮</div><div class="si-info"><div class="si-name">Xbox Game Pass</div><div class="si-meta">Gaming · Low usage</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:55%;background:#ffa502;"></div></div><span class="hs-num orange">55</span></div></div><div class="si-right"><div class="si-price">$14.99</div><div class="si-date">Jul 25</div><div class="badge b-orange" style="margin-top:3px;">⚠️ Review</div></div></div>
+        <div class="si"><div class="si-logo">🎬</div><div class="si-info"><div class="si-name">Disney+</div><div class="si-meta">Trial ending Jul 26!</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:45%;background:#ffa502;"></div></div><span class="hs-num orange">45</span></div></div><div class="si-right"><div class="si-price orange">$7.99</div><div class="si-date">⚠️ Jul 26</div><div class="badge b-orange" style="margin-top:3px;">Trial</div></div></div>
+        <div class="si"><div class="si-logo">🔒</div><div class="si-info"><div class="si-name">NordVPN</div><div class="si-meta">Utilities · Daily</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:85%;background:#00d46a;"></div></div><span class="hs-num green">85</span></div></div><div class="si-right"><div class="si-price">$4.49</div><div class="si-date">Aug 3</div><div class="badge b-green" style="margin-top:3px;">✅ Keep</div></div></div>
+        <div class="si"><div class="si-logo">📚</div><div class="si-info"><div class="si-name">Duolingo Plus</div><div class="si-meta">Education</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:72%;background:#00d46a;"></div></div><span class="hs-num green">72</span></div></div><div class="si-right"><div class="si-price">$6.99</div><div class="si-date">Jul 30</div><div class="badge b-blue" style="margin-top:3px;">✅ Good</div></div></div>
+        <div class="si"><div class="si-logo">📊</div><div class="si-info"><div class="si-name">Notion Pro</div><div class="si-meta">Productivity</div><div class="hb-wrap"><div class="hb"><div class="hbf" style="width:60%;background:#ffa502;"></div></div><span class="hs-num orange">60</span></div></div><div class="si-right"><div class="si-price">$8.00</div><div class="si-date">Jul 19</div><div class="badge b-orange" style="margin-top:3px;">⚠️ Review</div></div></div>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- LEAKS -->
+  <div class="pg" id="pg-leaks">
+    <div class="scroll">
+      <div style="padding:18px 18px 0;"><div style="font-size:22px;font-weight:800;">🚨 Money Leaks</div><div style="font-size:12px;color:var(--text-secondary);">AI found 4 issues · Save $671/year</div></div>
+      <div class="al" style="background:var(--accent-red-dim);border-radius:var(--radius-md);flex-direction:column;gap:9px;margin-top:14px;">
+        <div style="display:flex;gap:11px;"><div class="al-icon">🎵</div><div class="al-body"><div style="display:flex;justify-content:space-between;"><div class="al-title">Duplicate Music</div><div class="badge b-red">HIGH</div></div><div class="al-msg">Spotify + Apple Music. 95% overlap. Save <strong style="color:var(--accent-red);">$131.88/yr</strong>.</div></div></div>
+        <button class="al-btn" style="background:var(--accent-red);color:#fff;width:100%;border-radius:10px;padding:11px;font-family:inherit;">💀 Cancel Apple Music</button>
+      </div>
+      <div class="al" style="background:var(--accent-red-dim);border-radius:var(--radius-md);flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:11px;"><div class="al-icon">💪</div><div class="al-body"><div style="display:flex;justify-content:space-between;"><div class="al-title">Ghost Gym</div><div class="badge b-red">HIGH</div></div><div class="al-msg">91 days no check-in. <strong style="color:var(--accent-red);">$135 wasted</strong>. Save $540/yr.</div></div></div>
+        <button class="al-btn" style="background:var(--accent-red);color:#fff;width:100%;border-radius:10px;padding:11px;font-family:inherit;">💀 Cancel Gym</button>
+      </div>
+      <div class="al" style="background:var(--accent-orange-dim);border-radius:var(--radius-md);flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:11px;"><div class="al-icon">🎨</div><div class="al-body"><div style="display:flex;justify-content:space-between;"><div class="al-title">Adobe Price Hike</div><div class="badge b-orange">MEDIUM</div></div><div class="al-msg">+25% in March. Try Affinity ($70 one-time).</div></div></div>
+        <button class="al-btn" style="background:var(--accent-orange);color:#fff;width:100%;border-radius:10px;padding:11px;font-family:inherit;">📊 View Alternatives</button>
+      </div>
+      <div class="al" style="background:var(--accent-blue-dim);border-radius:var(--radius-md);flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:11px;"><div class="al-icon">⏰</div><div class="al-body"><div style="display:flex;justify-content:space-between;"><div class="al-title">Disney+ Trial Ending</div><div class="badge b-blue">3 DAYS</div></div><div class="al-msg">Expires Jul 26. $7.99/mo begins automatically.</div></div></div>
+        <button class="al-btn" style="background:var(--accent-blue);color:#fff;width:100%;border-radius:10px;padding:11px;font-family:inherit;">🔔 Set Reminder</button>
+      </div>
+      <div style="margin:14px 16px;padding:16px;background:linear-gradient(135deg,rgba(0,212,106,.15),rgba(0,212,106,.05));border:1px solid rgba(0,212,106,.3);border-radius:var(--radius-md);">
+        <div style="font-size:11px;font-weight:700;color:var(--accent-green);text-transform:uppercase;letter-spacing:.5px;">💰 Total Potential Savings</div>
+        <div style="font-size:36px;font-weight:900;color:var(--accent-green);margin:6px 0 2px;letter-spacing:-1px;">$671.88</div>
+        <div style="font-size:13px;color:var(--text-secondary);">per year · $55.99/month</div>
+        <button style="margin-top:12px;width:100%;padding:12px;background:var(--accent-green);color:#001a0a;font-size:14px;font-weight:800;border:none;border-radius:10px;cursor:pointer;font-family:inherit;">💀 Kill All Wasteful Subs</button>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- SAVINGS -->
+  <div class="pg" id="pg-savings">
+    <div class="scroll">
+      <div style="padding:18px 18px 0;"><div style="font-size:22px;font-weight:800;">💰 Savings Center</div><div style="font-size:12px;color:var(--text-secondary);">Ranked by worst value</div></div>
+      <div class="mg" style="margin-top:14px;">
+        <div class="mc"><div class="ml">Monthly Save</div><div class="mv green">$34.00</div><div class="mch green">If you act now</div></div>
+        <div class="mc"><div class="ml">Annual Save</div><div class="mv green">$408</div><div class="mch green">Per year</div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">🎯 Ranked</div></div>
+      <div class="sr" style="border-color:var(--accent-red);"><div class="sr-num" style="background:var(--accent-red-dim);color:var(--accent-red);">1</div><div class="sr-info"><div class="sr-name">💪 Gym Membership</div><div class="sr-reason">90 days unused · Score 20/100</div><div class="badge b-red" style="margin-top:4px;">🔴 Cancel</div></div><div class="sr-save">$45/mo</div></div>
+      <div class="sr" style="border-color:var(--accent-red);"><div class="sr-num" style="background:var(--accent-red-dim);color:var(--accent-red);">2</div><div class="sr-info"><div class="sr-name">🎵 Apple Music</div><div class="sr-reason">Duplicate of Spotify · Score 30/100</div><div class="badge b-red" style="margin-top:4px;">🔴 Duplicate</div></div><div class="sr-save">$11/mo</div></div>
+      <div class="sr" style="border-color:var(--accent-orange);"><div class="sr-num" style="background:var(--accent-orange-dim);color:var(--accent-orange);">3</div><div class="sr-info"><div class="sr-name">🎬 Disney+</div><div class="sr-reason">Trial ending · Score 45/100</div><div class="badge b-orange" style="margin-top:4px;">⚠️ Skip</div></div><div class="sr-save">$8/mo</div></div>
+      <div class="sr" style="border-color:var(--accent-orange);"><div class="sr-num" style="background:var(--accent-orange-dim);color:var(--accent-orange);">4</div><div class="sr-info"><div class="sr-name">🎮 Xbox Game Pass</div><div class="sr-reason">Low usage · Score 55/100</div><div class="badge b-orange" style="margin-top:4px;">⚠️ Pause?</div></div><div class="sr-save">$15/mo</div></div>
+      <div class="sec-hdr"><div class="sec-title">📋 Cancellation Guide</div></div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:11px;margin-bottom:11px;"><span style="font-size:24px;">💪</span><div><div style="font-size:14px;font-weight:800;">Cancel Gym Membership</div><div style="font-size:11px;color:var(--text-secondary);">Est. 5–15 mins</div></div><div class="sr-save" style="margin-left:auto;">$540/yr</div></div>
+        <div class="cs"><div class="csn">1</div><div class="cst">Visit your gym's member portal or front desk. Bring your membership ID.</div></div>
+        <div class="cs"><div class="csn">2</div><div class="cst">Request a cancellation form. They must provide one by law — don't accept a "pause."</div></div>
+        <div class="cs"><div class="csn">3</div><div class="cst">Submit and request email confirmation. Screenshot it.</div></div>
+        <div class="cs"><div class="csn">4</div><div class="cst">Monitor next billing cycle to confirm no charge occurred.</div></div>
+        <button style="width:100%;margin-top:11px;padding:11px;background:var(--accent-red);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">🔗 Open Cancellation Page</button>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- AI -->
+  <div class="pg" id="pg-ai">
+    <div style="padding:16px 16px 0;flex-shrink:0;"><div style="font-size:22px;font-weight:800;">🤖 AI Assistant</div><div style="font-size:12px;color:var(--text-secondary);">Powered by financial intelligence</div></div>
+    <div class="chip-row"><div class="chip">💸 Save money</div><div class="chip">❌ What to cancel</div><div class="chip">📊 Changes</div><div class="chip">💡 Where's my money?</div></div>
+    <div class="scroll" style="padding-bottom:0;">
+      <div class="chat-msgs">
+        <div><div class="cb-name">💀 AI</div><div class="cbub cba">Hey Alex! I analyzed your 12 subscriptions. You spend <strong>$87.50/month</strong> but found <strong>$34/month savings</strong>. Where should we start? 💰</div></div>
+        <div class="cbub cbu" style="align-self:flex-end;">What should I cancel?</div>
+        <div><div class="cb-name">💀 AI</div><div class="cbub cba">Top 3:<br><br><strong>1. 💪 Gym ($45/mo)</strong> — 91 days no visits → $540/yr saved<br><br><strong>2. 🎵 Apple Music ($11)</strong> — Duplicate of Spotify → $131/yr saved<br><br><strong>3. 🎬 Disney+ ($8)</strong> — Trial ends 3 days → $96/yr saved<br><br>Total: <strong style="color:#00d46a;">$767/year 🎯</strong></div></div>
+      </div>
+    </div>
+    <div class="ci-wrap">
+      <input class="ci" placeholder="Ask about your subscriptions…" type="text">
+      <button class="csend">➤</button>
+    </div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="pg" id="pg-analytics">
+    <div class="scroll">
+      <div style="padding:18px 18px 0;"><div style="font-size:22px;font-weight:800;">📊 Analytics</div><div style="font-size:12px;color:var(--text-secondary);">Spending insights</div></div>
+      <div class="mini-chart" style="margin-top:14px;">
+        <div class="ct-lbl">📅 12-Month Spending</div>
+        <svg width="100%" height="88" viewBox="0 0 340 88"><defs><linearGradient id="bg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c3aed" stop-opacity=".9"/><stop offset="100%" stop-color="#7c3aed" stop-opacity=".4"/></linearGradient></defs>
+        <rect x="4" y="50" width="20" height="36" rx="3" fill="url(#bg2)" opacity=".7"/><rect x="30" y="48" width="20" height="38" rx="3" fill="url(#bg2)" opacity=".7"/><rect x="56" y="43" width="20" height="43" rx="3" fill="url(#bg2)" opacity=".7"/><rect x="82" y="46" width="20" height="40" rx="3" fill="url(#bg2)" opacity=".7"/><rect x="108" y="33" width="20" height="53" rx="3" fill="url(#bg2)" opacity=".8"/><rect x="134" y="28" width="20" height="58" rx="3" fill="url(#bg2)" opacity=".9"/><rect x="160" y="36" width="20" height="50" rx="3" fill="url(#bg2)" opacity=".8"/><rect x="186" y="40" width="20" height="46" rx="3" fill="url(#bg2)" opacity=".8"/><rect x="212" y="38" width="20" height="48" rx="3" fill="url(#bg2)" opacity=".8"/><rect x="238" y="42" width="20" height="44" rx="3" fill="url(#bg2)" opacity=".8"/><rect x="264" y="40" width="20" height="46" rx="3" fill="url(#bg2)" opacity=".8"/><rect x="290" y="32" width="20" height="54" rx="3" fill="#7c3aed"/>
+        <text x="7" y="87" fill="#555570" font-size="8">J</text><text x="33" y="87" fill="#555570" font-size="8">A</text><text x="59" y="87" fill="#555570" font-size="8">S</text><text x="85" y="87" fill="#555570" font-size="8">O</text><text x="111" y="87" fill="#555570" font-size="8">N</text><text x="137" y="87" fill="#555570" font-size="8">D</text><text x="163" y="87" fill="#555570" font-size="8">J</text><text x="189" y="87" fill="#555570" font-size="8">F</text><text x="215" y="87" fill="#555570" font-size="8">M</text><text x="241" y="87" fill="#555570" font-size="8">A</text><text x="267" y="87" fill="#555570" font-size="8">M</text><text x="293" y="87" fill="#555570" font-size="8">J</text></svg>
+      </div>
+      <div class="card">
+        <div class="card-t">📦 Spend by Category</div>
+        <div class="ab-item"><div class="ab-hdr"><span class="ab-lbl">⚙️ Productivity</span><span class="ab-val">$82.99 · 44%</span></div><div class="ab-bg"><div class="ab-fill" style="width:44%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div></div>
+        <div class="ab-item"><div class="ab-hdr"><span class="ab-lbl">🎬 Entertainment</span><span class="ab-val">$44.46 · 33%</span></div><div class="ab-bg"><div class="ab-fill" style="width:33%;background:linear-gradient(90deg,#7c3aed,#a78bfa);"></div></div></div>
+        <div class="ab-item"><div class="ab-hdr"><span class="ab-lbl">💪 Fitness</span><span class="ab-val">$45.00 · 26%</span></div><div class="ab-bg"><div class="ab-fill" style="width:26%;background:linear-gradient(90deg,#ff4757,#ff6b7a);"></div></div></div>
+        <div class="ab-item"><div class="ab-hdr"><span class="ab-lbl">🌐 Utilities</span><span class="ab-val">$7.48 · 14%</span></div><div class="ab-bg"><div class="ab-fill" style="width:14%;background:linear-gradient(90deg,#00d46a,#4ade80);"></div></div></div>
+        <div class="ab-item"><div class="ab-hdr"><span class="ab-lbl">🎮 Gaming</span><span class="ab-val">$14.99 · 17%</span></div><div class="ab-bg"><div class="ab-fill" style="width:17%;background:linear-gradient(90deg,#ffa502,#fbbf24);"></div></div></div>
+      </div>
+      <div class="mg">
+        <div class="mc"><div class="ml">Highest Cost</div><div class="mv" style="font-size:15px;">Adobe CC</div><div class="mch red">$54.99/mo</div></div>
+        <div class="mc"><div class="ml">Best Value</div><div class="mv" style="font-size:15px;">iCloud</div><div class="mch green">$2.99 · 92</div></div>
+      </div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="pg" id="pg-settings">
+    <div class="scroll">
+      <div style="padding:18px 18px 0;"><div style="font-size:22px;font-weight:800;">⚙️ Settings</div></div>
+      <div style="display:flex;align-items:center;gap:13px;padding:16px 16px 10px;">
+        <div style="width:52px;height:52px;background:linear-gradient(135deg,#7c3aed,#3b82f6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:21px;">👤</div>
+        <div><div style="font-size:16px;font-weight:800;">Alex Johnson</div><div style="font-size:12px;color:var(--text-secondary);">alex@email.com · Free Plan</div><div class="badge b-orange" style="margin-top:3px;">Upgrade ⚡</div></div>
+      </div>
+      <div class="sec-hdr"><div class="sec-title">🔗 Connected</div></div>
+      <div class="con-card ok"><div class="con-icon" style="background:rgba(0,212,106,.15);">🏦</div><div class="con-info"><div class="con-title">Chase Bank</div><div class="con-sub" style="color:var(--accent-green);">✅ Connected · 2 min ago</div></div><div style="color:var(--text-muted);">›</div></div>
+      <div class="con-card"><div class="con-icon" style="background:rgba(59,130,246,.15);">📧</div><div class="con-info"><div class="con-title">Gmail Inbox Scan</div><div class="con-sub">Detect subs from receipts</div></div><div style="padding:5px 10px;background:var(--accent-purple);color:#fff;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;">Connect</div></div>
+      <div class="sec-hdr" style="margin-top:8px;"><div class="sec-title">🔔 Notifications</div></div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="set-row"><div class="set-icon">🔄</div><div class="set-info"><div class="set-title">Renewal Reminders</div><div class="set-sub">3 days before billing</div></div><div class="tog"></div></div>
+        <div class="set-row"><div class="set-icon">⏰</div><div class="set-info"><div class="set-title">Trial Ending Alerts</div><div class="set-sub">48h before trial ends</div></div><div class="tog"></div></div>
+        <div class="set-row"><div class="set-icon">📈</div><div class="set-info"><div class="set-title">Price Increase Alerts</div><div class="set-sub">Immediately</div></div><div class="tog"></div></div>
+      </div>
+      <div class="sec-hdr" style="margin-top:8px;"><div class="sec-title">⚖️ Legal</div></div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="set-row" onclick="goTo('terms')"><div class="set-icon">📄</div><div class="set-info"><div class="set-title">Terms of Service</div><div class="set-sub">Last updated Jun 23, 2025</div></div><div style="color:var(--text-muted);">›</div></div>
+        <div class="set-row" onclick="goTo('privacy')"><div class="set-icon">🔒</div><div class="set-info"><div class="set-title">Privacy Policy</div><div class="set-sub">How we handle your data</div></div><div style="color:var(--text-muted);">›</div></div>
+        <div class="set-row" style="border-bottom:none;" onclick="doLogout()"><div class="set-icon">🚪</div><div class="set-info"><div class="set-title" style="color:var(--accent-red);">Sign Out</div><div class="set-sub">alex@email.com</div></div><div style="color:var(--text-muted);">›</div></div>
+      </div>
+      <div class="prem" style="margin-bottom:10px;"><div style="font-size:22px;">⚡</div><div class="prem-text"><div class="prem-title">Go Premium</div><div class="prem-sub">Unlimited · AI · Bank sync · Avg $408 saved</div></div><button class="prem-cta" style="font-family:inherit;">Try Free</button></div>
+      <div style="height:20px;"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav" id="bnav" style="display:none;">
+    <button class="bi active" id="bi-dash" onclick="showApp('dash')"><span class="bi-icon">🏠</span><span>Home</span></button>
+    <button class="bi" id="bi-subs" onclick="showApp('subs')"><span class="bi-icon">📋</span><span>Subs</span></button>
+    <button class="bi" id="bi-leaks" onclick="showApp('leaks')"><span class="bi-icon">🚨</span><span>Leaks</span></button>
+    <button class="bi" id="bi-ai" onclick="showApp('ai')"><span class="bi-icon">🤖</span><span>AI</span></button>
+    <button class="bi" id="bi-settings" onclick="showApp('settings')"><span class="bi-icon">⚙️</span><span>More</span></button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     INFO PANEL
+══════════════════════════════════ -->
+<div style="flex:1;min-width:280px;max-width:460px;display:flex;flex-direction:column;gap:14px;">
+  <div style="background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;">
+    <div style="font-size:19px;font-weight:900;margin-bottom:4px;">💀 Subscription Killer</div>
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">What changed in this update</div>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="color:var(--accent-green);font-weight:800;flex-shrink:0;">✅</span><div><strong>Mandatory Terms acceptance</strong> — Sign Up button disabled until checkbox ticked. Can't bypass it.</div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="color:var(--accent-green);font-weight:800;flex-shrink:0;">✅</span><div><strong>Real phone scan simulation</strong> — Animated radar, live log, progress bar after signup</div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="color:var(--accent-green);font-weight:800;flex-shrink:0;">✅</span><div><strong>"You good, dw" state</strong> — Clean all-clear screen if nothing found with green stats</div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="color:var(--accent-green);font-weight:800;flex-shrink:0;">✅</span><div><strong>Subs found state</strong> — Shows real detected subscriptions with savings breakdown</div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="color:var(--accent-red);font-weight:800;flex-shrink:0;">🔬</span><div><strong>Deep Scan paywall — $3.99</strong> — Full paywall screen, 6 features explained, payment modal with card form</div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="color:var(--accent-red);font-weight:800;flex-shrink:0;">🔬</span><div><strong>Deep Scan running</strong> — 2-pass animation, red sweep radar, forensic log</div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;font-size:13px;"><span style="color:var(--accent-red);font-weight:800;flex-shrink:0;">🔬</span><div><strong>Deep Scan results</strong> — 3 hidden charges found: Google One, Apple TV+, micro-charges. $804/yr savings</div></div>
+    </div>
+  </div>
+  <div style="background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;">
+    <div style="font-size:15px;font-weight:800;margin-bottom:12px;">🎯 Try the full flow</div>
+    <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--text-secondary);">
+      <div>1️⃣ <strong style="color:var(--text-primary);">Splash</strong> → tap Get Started</div>
+      <div>2️⃣ <strong style="color:var(--text-primary);">Sign Up</strong> → try clicking the button <em>before</em> accepting T&C — it's disabled!</div>
+      <div>3️⃣ Tick the checkbox → button enables</div>
+      <div>4️⃣ Submit → <strong style="color:var(--text-primary);">Phone scan</strong> runs (radar + live log)</div>
+      <div>5️⃣ See either <strong style="color:var(--accent-green);">You good, dw</strong> or <strong style="color:var(--accent-red);">12 subs found</strong></div>
+      <div>6️⃣ Tap <strong style="color:var(--accent-purple);">Deep Scan — $3.99</strong> → paywall screen</div>
+      <div>7️⃣ Pay → forensic 2-pass scan runs</div>
+      <div>8️⃣ Results: 3 hidden charges, $804/yr extra savings</div>
+      <div>9️⃣ Enter dashboard → full 7-screen app</div>
+    </div>
+  </div>
+  <div style="background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;">
+    <div style="font-size:15px;font-weight:800;margin-bottom:12px;">💵 Revenue Streams</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-elevated);border-radius:10px;"><div><div style="font-size:13px;font-weight:700;">Deep Scan (one-time)</div><div style="font-size:11px;color:var(--text-secondary);">Per user · high conversion</div></div><div style="font-size:16px;font-weight:900;color:var(--accent-purple);">$3.99</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-elevated);border-radius:10px;"><div><div style="font-size:13px;font-weight:700;">Premium Monthly</div><div style="font-size:11px;color:var(--text-secondary);">Unlimited + AI + bank sync</div></div><div style="font-size:16px;font-weight:900;color:var(--accent-purple);">$4.99/mo</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:var(--bg-elevated);border-radius:10px;"><div><div style="font-size:13px;font-weight:700;">Premium Annual</div><div style="font-size:11px;color:var(--text-secondary);">Save 35% · best value</div></div><div style="font-size:16px;font-weight:900;color:var(--accent-purple);">$39/yr</div></div>
+    </div>
+  </div>
+  <div style="background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border);padding:22px;">
+    <div style="font-size:15px;font-weight:800;margin-bottom:8px;">🌙 Theme</div>
+    <button class="btn-p" onclick="toggleTheme()" style="padding:12px;">Toggle Light / Dark Mode</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════ ROUTING ═══════════════════
+let navHistory = [];
+let tcAccepted = false;
+const APP = ['dash','subs','leaks','savings','ai','analytics','settings'];
+
+function goTo(name) {
+  const cur = document.querySelector('.pg.active');
+  if (cur) navHistory.push(cur.id.replace('pg-',''));
+  _show(name);
+}
+
+function goBack() {
+  if (!navHistory.length) return;
+  const prev = navHistory.pop();
+  _show(prev);
+  navHistory.pop(); // _show pushes again — remove
+}
+
+function _show(name) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('active'));
+  const t = document.getElementById('pg-' + name);
+  if (t) t.classList.add('active');
+  const inApp = APP.includes(name);
+  document.getElementById('navBar').style.display = inApp ? 'flex' : 'none';
+  document.getElementById('bnav').style.display = inApp ? 'flex' : 'none';
+  if (inApp) {
+    document.querySelectorAll('.nav-tab[data-s]').forEach((tab,i) => {
+      tab.classList.toggle('active', tab.dataset.s === name);
+    });
+    document.querySelectorAll('.bi').forEach(b => b.classList.remove('active'));
+    const bi = document.getElementById('bi-' + name);
+    if (bi) bi.classList.add('active');
+  }
+}
+
+function showApp(name) { _show(name); }
+
+// Nav tab clicks
+document.querySelectorAll('.nav-tab[data-s]').forEach(tab => {
+  tab.addEventListener('click', () => showApp(tab.dataset.s));
+});
+
+// Cat pills
+document.querySelectorAll('.cp').forEach(p => p.addEventListener('click', function(){
+  this.closest('.cp-wrap').querySelectorAll('.cp').forEach(x=>x.classList.remove('active'));
+  this.classList.add('active');
+}));
+
+// Chip → chat input
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', function(){
+  const i = document.querySelector('.ci'); if(i) i.value = this.textContent;
+}));
+
+// ═══════════════════ AUTH ═══════════════════
+
+// TERMS CHECKBOX — mandatory
+function toggleTC() {
+  tcAccepted = !tcAccepted;
+  const cb = document.getElementById('tc-cb');
+  const box = document.getElementById('tc-box');
+  const btn = document.getElementById('su-btn');
+  const hint = document.getElementById('su-hint');
+  cb.classList.toggle('on', tcAccepted);
+  cb.textContent = tcAccepted ? '✓' : '';
+  box.classList.toggle('accepted', tcAccepted);
+  btn.disabled = !tcAccepted;
+  if (tcAccepted) {
+    hint.textContent = '✅ Terms accepted — you\'re good to sign up!';
+    hint.style.color = 'var(--accent-green)';
+    document.getElementById('tc-err').classList.remove('show');
+  } else {
+    hint.textContent = '☝️ Accept Terms above to enable sign up';
+    hint.style.color = 'var(--text-muted)';
+  }
+}
+
+// Navigate from signup to terms/privacy and come back
+function goToFromSignup(page) {
+  navHistory.push('signup');
+  _show(page);
+}
+
+function validateSignup() { /* live validation can go here */ }
+
+function doLogin() {
+  const email = document.getElementById('li-email').value.trim();
+  const pass = document.getElementById('li-pass').value;
+  let ok = true;
+  if (!email||!email.includes('@')) { showErr('li-email','li-email-err','Please enter a valid email.'); ok=false; }
+  if (!pass||pass.length<6) { showErr('li-pass','li-pass-err','Password required.'); ok=false; }
+  if (!ok) return;
+  const btn = document.getElementById('li-btn');
+  btn.innerHTML = '<span class="spinner"></span>Signing in…'; btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = 'Sign In'; btn.disabled = false;
+    toast('✅ Welcome back, Alex!');
+    setTimeout(() => startPhoneScan(), 600);
+  }, 1800);
+}
+
+function doSignup() {
+  if (!tcAccepted) { document.getElementById('tc-err').classList.add('show'); return; }
+  const name = document.getElementById('su-name').value.trim();
+  const email = document.getElementById('su-email').value.trim();
+  const pass = document.getElementById('su-pass').value;
+  const conf = document.getElementById('su-confirm').value;
+  let ok = true;
+  if (!name) { showErr('su-name','su-name-err','Please enter your name.'); ok=false; }
+  if (!email||!email.includes('@')) { showErr('su-email','su-email-err','Valid email required.'); ok=false; }
+  if (pass.length<8) { showErr('su-pass','su-pass-err','Min. 8 characters required.'); ok=false; }
+  if (pass!==conf) { showErr('su-confirm','su-confirm-err','Passwords do not match.'); ok=false; }
+  if (!ok) return;
+  const btn = document.getElementById('su-btn');
+  btn.innerHTML = '<span class="spinner"></span>Creating account…'; btn.disabled = true;
+  setTimeout(() => {
+    btn.innerHTML = 'Create Account — Free'; btn.disabled = false;
+    toast('🎉 Account created!');
+    setTimeout(() => startPhoneScan(), 700);
+  }, 1800);
+}
+
+function socialLogin(provider) {
+  toast('🔗 Connecting with ' + provider + '…');
+  setTimeout(() => { toast('✅ Signed in with '+provider+'!'); setTimeout(startPhoneScan,700); }, 1600);
+}
+
+function doForgot() {
+  const e = document.getElementById('fp-email').value.trim();
+  if (!e||!e.includes('@')) { toast('Enter a valid email address.'); return; }
+  toast('📧 Reset link sent to '+e);
+  setTimeout(() => goTo('login'), 2500);
+}
+
+function doLogout() {
+  if (confirm('Sign out of Subscription Killer?')) { navHistory=[]; _show('login'); toast('👋 Signed out'); }
+}
+
+function enterApp() { _show('dash'); }
+
+function showErr(inputId, errId, msg) {
+  const i = document.getElementById(inputId); if(i) i.classList.add('err');
+  const e = document.getElementById(errId); if(e){e.textContent=msg;e.classList.add('show');}
+}
+
+function togglePwd(id) { const i=document.getElementById(id);if(i) i.type=i.type==='password'?'text':'password'; }
+
+// Password strength
+function checkStr() {
+  const p = document.getElementById('su-pass').value;
+  const wrap = document.getElementById('sb-wrap');
+  if (!p) { wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  let s=0;
+  if (p.length>=8) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  const colors=['#ff4757','#ffa502','#3b82f6','#00d46a'];
+  const labels=['Weak','Fair','Good','Strong 💪'];
+  for(let i=1;i<=4;i++){
+    const seg=document.getElementById('ss'+i);
+    seg.style.background=i<=s?colors[s-1]:'var(--bg-elevated)';
+  }
+  const sl=document.getElementById('sl');
+  sl.textContent=labels[s-1]||'';
+  sl.style.color=colors[s-1]||'var(--text-muted)';
+}
+
+// ═══════════════════ PHONE SCAN ═══════════════════
+// Set to true to simulate subscriptions found, false for all-clear
+const DEMO_HAS_SUBS = false;
+
+const scanLogs = [
+  {icon:'📱',msg:'Scanning installed apps…'},
+  {icon:'🍎',msg:'Checking App Store subscriptions…'},
+  {icon:'🌐',msg:'Checking Google Play subscriptions…'},
+  {icon:'☁️',msg:'Scanning iCloud billing…'},
+  {icon:'📧',msg:'Reading email receipts…'},
+  {icon:'🏦',msg:'Analyzing bank transactions…'},
+  {icon:'🔍',msg:'Detecting recurring charge patterns…'},
+  {icon:'🔍',msg:'Cross-checking merchant names…'},
+  {icon:'🔍',msg:'Verifying billing cycles…'},
+  {icon:'✅',msg:'Scan complete — analyzing results…'},
+];
+
+function startPhoneScan() {
+  goTo('scan');
+  const log = document.getElementById('scan-log');
+  const prog = document.getElementById('prog-fill');
+  const pct = document.getElementById('prog-pct');
+  const title = document.getElementById('scan-title');
+  const sub = document.getElementById('scan-sub');
+  log.innerHTML = '';
+  prog.style.width = '0%';
+
+  scanLogs.forEach((item, i) => {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'scan-entry';
+      el.innerHTML = `<span class="scan-pulse"></span><span style="font-size:13px;">${item.icon}</span> <span>${item.msg}</span>`;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+
+      const pctVal = Math.round((i+1)/scanLogs.length*100);
+      prog.style.width = pctVal+'%';
+      pct.textContent = pctVal+'%';
+
+      if (i === 6) { title.textContent = 'Almost done…'; sub.textContent='Cross-referencing results…'; }
+      if (i === scanLogs.length-1) {
+        title.textContent = 'Scan Complete!';
+        sub.textContent = 'Analysis done. Checking results…';
+        setTimeout(() => showScanResults(), 1200);
+      }
+    }, i * 250);
+  });
+}
+
+function showScanResults() {
+  if (DEMO_HAS_SUBS) {
+    // Populate result list with found subscriptions
+    const items = [
+      {e:'🎵',n:'Spotify Premium',p:'$9.99',flag:''},
+      {e:'🎬',n:'Netflix',p:'$15.49',flag:''},
+      {e:'🤖',n:'ChatGPT Plus',p:'$20.00',flag:''},
+      {e:'🎨',n:'Adobe CC',p:'$54.99',flag:'⚠️ Price hike'},
+      {e:'🎵',n:'Apple Music',p:'$10.99',flag:'🔴 Duplicate'},
+      {e:'💪',n:'Gym Membership',p:'$45.00',flag:'🔴 Unused 91d'},
+    ];
+    const list = document.getElementById('result-list');
+    list.innerHTML = '';
+    items.forEach(item => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);';
+      row.innerHTML = `<span style="font-size:12px;color:var(--text-secondary);">${item.e} ${item.n} <span style="color:var(--accent-orange);font-size:10px;">${item.flag}</span></span><span style="font-size:12px;font-weight:800;">${item.p}</span>`;
+      list.appendChild(row);
+    });
+    goTo('results');
+  } else {
+    // No subscriptions found — show all clear
+    goTo('allclear');
+  }
+}
+
+// Show "all clear" state (can be triggered from results screen for demo)
+function showAllClear() { goTo('allclear'); }
+
+// ═══════════════════ DEEP SCAN ═══════════════════
+const deepLogs = [
+  // Pass 1
+  {icon:'🔬',msg:'PASS 1: Initializing forensic engine…'},
+  {icon:'🌐',msg:'PASS 1: Deep-scanning Google account billing…'},
+  {icon:'🌐',msg:'PASS 1: Checking Google One, Play Pass, Workspace…'},
+  {icon:'🍎',msg:'PASS 1: Scanning Apple ID purchase history…'},
+  {icon:'🍎',msg:'PASS 1: Checking Apple One, TV+, Arcade, News+…'},
+  {icon:'🏦',msg:'PASS 1: Analyzing 24 months of transactions…'},
+  {icon:'🔍',msg:'PASS 1: Fingerprinting recurring charge patterns…'},
+  {icon:'📧',msg:'PASS 1: Deep-scanning email incl. spam folder…'},
+  {icon:'💡',msg:'PASS 1: Detected Google One — $2.99/mo (hidden)'},
+  {icon:'⚠️',msg:'PASS 1: Anomaly: micro-charges $0.99 × 56 found'},
+  // Pass 2
+  {icon:'🔬',msg:'PASS 2: Cross-referencing with Pass 1 results…'},
+  {icon:'🌐',msg:'PASS 2: Re-checking Google billing infrastructure…'},
+  {icon:'🍎',msg:'PASS 2: Re-scanning Apple dark pattern subscriptions…'},
+  {icon:'💡',msg:'PASS 2: Confirmed Apple TV+ — $9.99/mo (dark pattern)'},
+  {icon:'🏦',msg:'PASS 2: Verifying micro-charge pattern — gaming app'},
+  {icon:'🔒',msg:'PASS 2: Running fraud pattern analysis…'},
+  {icon:'✅',msg:'PASS 2: Scan validated. 3 hidden charges confirmed.'},
+];
+
+function startDeepScan() {
+  _show('deepscan-run');
+  const log = document.getElementById('ds-log');
+  const prog = document.getElementById('ds-prog');
+  const pct = document.getElementById('ds-pct');
+  const title = document.getElementById('ds-title');
+  const badge = document.querySelector('#pg-deepscan-run .al, [style*="PASS 1"]');
+  log.innerHTML = '';
+  prog.style.width = '0%';
+
+  deepLogs.forEach((item, i) => {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'scan-entry';
+      el.style.color = item.icon==='💡'||item.icon==='⚠️' ? 'var(--accent-orange)' : '';
+      el.innerHTML = `<span class="scan-pulse" style="${item.icon==='💡'||item.icon==='⚠️'?'background:var(--accent-orange);':''}"></span><span style="font-size:13px;">${item.icon}</span> <span>${item.msg}</span>`;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+
+      const pctVal = Math.round((i+1)/deepLogs.length*100);
+      prog.style.width = pctVal+'%';
+      pct.textContent = pctVal+'%';
+
+      const passLabel = document.querySelector('#pg-deepscan-run [style*="PASS"]');
+      if (i >= 10 && passLabel) passLabel.textContent = '🔬 DEEP SCAN — PASS 2 OF 2';
+
+      if (i===5) { title.textContent = 'Going Deeper…'; }
+      if (i===10) { title.textContent = 'Cross-Validating Results…'; }
+      if (i===deepLogs.length-1) {
+        title.textContent = '✅ All Clear — Results Ready';
+        setTimeout(() => _show('deepresults'), 1000);
+      }
+    }, i * 320);
+  });
+}
+
+// ═══════════════════ PAYMENT MODAL ═══════════════════
+function showPayModal() { document.getElementById('pay-modal').classList.add('show'); }
+function closeModal(e) { if (e.target===document.getElementById('pay-modal')) document.getElementById('pay-modal').classList.remove('show'); }
+
+function doPay() {
+  const btn = document.getElementById('pay-btn');
+  btn.innerHTML = '<span class="spinner"></span>Processing…'; btn.disabled=true;
+  setTimeout(() => {
+    document.getElementById('pay-modal').classList.remove('show');
+    btn.innerHTML = 'Pay $3.99 Securely'; btn.disabled=false;
+    toast('✅ Payment successful! Launching Deep Scan…');
+    setTimeout(startDeepScan, 800);
+  }, 2200);
+}
+
+// Card number formatting
+function fmtCard(el) {
+  let v = el.value.replace(/\D/g,'').substring(0,16);
+  el.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+function fmtExpiry(el) {
+  let v = el.value.replace(/\D/g,'').substring(0,4);
+  if (v.length>2) v = v.substring(0,2)+' / '+v.substring(2);
+  el.value = v;
+}
+
+// ═══════════════════ MISC ═══════════════════
+function toast(msg, bg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = bg||'var(--accent-green)';
+  t.style.color = bg?'#fff':'#001a0a';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+let isLight = false;
+function toggleTheme() {
+  isLight=!isLight;
+  document.body.classList.toggle('light-mode',isLight);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.textContent=isLight?'🌙 Dark':'☀️ Light');
+}
+</script>
+</body>
+</html>
